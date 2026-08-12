@@ -170,9 +170,9 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, a:focus-visib
 .model-mark { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 8px; color: #0b5949; background: #dcece5; font-family: Georgia, serif; font-weight: 700; }
 .coral .model-mark { color: #914f31; background: #f3ded2; }
 .blue .model-mark { color: #315e84; background: #dce9f4; }
-.model-card header h3 { font-size: 13px; margin: 0 0 3px; }
-.model-card header p { font-size: 9px; margin: 0; color: #929792; }
-.status { margin-left: auto; font-size: 9px; font-weight: 800; border-radius: 999px; padding: 5px 8px; background: #eeece6; color: #777d79; }
+.model-card header h3 { font-size: 18px; margin: 0 0 3px; }
+.model-card header p { font-size: 14px; margin: 0; color: #929792; }
+.status { margin-left: auto; font-size: 14px; font-weight: 800; border-radius: 999px; padding: 5px 8px; background: #eeece6; color: #777d79; }
 .status.thinking { color: #8a6a23; background: #f5ebca; }
 .status.done { color: #23775f; background: #dff0e9; }
 .status.error { color: #9f503e; background: #f5dfd9; }
