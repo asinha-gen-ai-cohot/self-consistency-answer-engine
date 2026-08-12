@@ -58,6 +58,8 @@ export default function Home() {
   });
   const [copied, setCopied] = useState(false);
   const runId = useRef(0);
+  const resultsRef = useRef<HTMLElement>(null);
+  const finalAnswerRef = useRef<HTMLElement>(null);
 
   const completedCount = useMemo(
     () => candidates.filter((candidate) => candidate.status === "done").length,
@@ -74,6 +76,12 @@ export default function Home() {
     const data = (await response.json()) as { answer?: string; error?: string };
     if (!response.ok || !data.answer) throw new Error(data.error || "The model did not return an answer.");
     return data.answer;
+  }
+
+  function reveal(element: HTMLElement | null) {
+    if (!element) return;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    element.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
   }
 
   async function runConsensus() {
@@ -93,6 +101,7 @@ export default function Home() {
         status: "thinking",
       })),
     );
+    window.requestAnimationFrame(() => reveal(resultsRef.current));
 
     const responses = await Promise.all(
       PROVIDERS.map(async ({ provider, name }) => {
@@ -140,6 +149,7 @@ export default function Home() {
     if (!successful.length) {
       setFinalStatus("error");
       setFinalError("None of the models completed. Check your API keys or switch on demo mode.");
+      window.requestAnimationFrame(() => reveal(finalAnswerRef.current));
       return;
     }
 
@@ -158,10 +168,12 @@ export default function Home() {
       if (runId.current === currentRun) {
         setFinalAnswer(answer);
         setFinalStatus("done");
+        window.requestAnimationFrame(() => reveal(finalAnswerRef.current));
       }
     } catch (error) {
       setFinalStatus("error");
       setFinalError(error instanceof Error ? error.message : "Synthesis failed.");
+      window.requestAnimationFrame(() => reveal(finalAnswerRef.current));
     }
   }
 
@@ -262,7 +274,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="process-section" aria-labelledby="process-title">
+      <section className="process-section" aria-labelledby="process-title" ref={resultsRef}>
         <div className="section-heading">
           <div>
             <span className="kicker">THE DELIBERATION</span>
@@ -304,7 +316,7 @@ export default function Home() {
           <span /><div><i>✦</i> Evaluator synthesis</div><span />
         </div>
 
-        <article className={`final-card ${finalStatus}`}>
+        <article className={`final-card ${finalStatus}`} ref={finalAnswerRef} aria-live="polite" aria-busy={finalStatus === "thinking"}>
           <div className="final-head">
             <div className="final-icon">✦</div>
             <div>
