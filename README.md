@@ -12,6 +12,8 @@ The user enters a question in the browser. The application sends that question t
 
 The provider requests run through a server-side API route, keeping API keys out of the browser. The interface shows loading progress and handles individual provider failures without cancelling the other requests.
 
+Model Markdown is rendered as safe, formatted HTML in the interface. Raw HTML from model responses is not executed.
+
 To control cost, each visitor can start one complete council request per minute. The three provider calls and final synthesis share a server-issued run token and count as one user request.
 
 ## Self-consistency flow

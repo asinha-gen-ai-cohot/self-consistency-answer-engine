@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 type Provider = "openai" | "claude" | "gemini";
 type Status = "idle" | "thinking" | "done" | "error";
@@ -38,8 +40,19 @@ function elapsedLabel(ms?: number) {
   return `${(ms / 1000).toFixed(1)}s`;
 }
 
-function answerParagraphs(answer: string) {
-  return answer.split(/\n\n+/).filter(Boolean);
+function FormattedAnswer({ answer, className }: { answer: string; className: string }) {
+  return (
+    <div className={`formatted-answer ${className}`}>
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={{
+          a: ({ children, href }) => <a href={href} target="_blank" rel="noreferrer">{children}</a>,
+        }}
+      >
+        {answer}
+      </ReactMarkdown>
+    </div>
+  );
 }
 
 export default function Home() {
@@ -262,7 +275,7 @@ export default function Home() {
                   {candidate.status === "thinking" && <div className="skeleton"><i /><i /><i /><i /></div>}
                   {candidate.status === "error" && <div className="error-copy"><strong>Couldn’t complete</strong><p>{candidate.error}</p></div>}
                   {candidate.status === "done" && candidate.answer && (
-                    <div className="answer-copy">{answerParagraphs(candidate.answer).map((paragraph, p) => <p key={p}>{paragraph}</p>)}</div>
+                    <FormattedAnswer answer={candidate.answer} className="answer-copy" />
                   )}
                 </div>
               </article>
@@ -292,7 +305,7 @@ export default function Home() {
             )}
             {finalStatus === "error" && <div className="final-error"><strong>Synthesis paused</strong><p>{finalError}</p></div>}
             {finalStatus === "done" && (
-              <div className="final-copy">{answerParagraphs(finalAnswer).map((paragraph, p) => <p key={p}>{paragraph}</p>)}</div>
+              <FormattedAnswer answer={finalAnswer} className="final-copy" />
             )}
           </div>
           {finalStatus === "done" && (

@@ -178,8 +178,28 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, a:focus-visib
 .status.error { color: #9f503e; background: #f5dfd9; }
 .card-body { padding: 19px 19px 23px; min-height: 288px; max-height: 440px; overflow: auto; }
 .empty-copy { text-align: center; color: #a2a5a0; font-size: 12px; margin: 95px auto 0; max-width: 190px; line-height: 1.55; }
-.answer-copy p { margin: 0 0 13px; color: #515a55; font-size: 11px; line-height: 1.72; }
-.answer-copy p:first-child::first-letter { font-family: Georgia, serif; font-size: 28px; line-height: .8; color: var(--green); float: left; margin: 5px 4px 0 0; }
+.formatted-answer { color: #515a55; overflow-wrap: anywhere; }
+.formatted-answer > :first-child { margin-top: 0; }
+.formatted-answer > :last-child { margin-bottom: 0; }
+.formatted-answer h1, .formatted-answer h2, .formatted-answer h3, .formatted-answer h4 { color: #26332d; font-family: var(--font-display), sans-serif; line-height: 1.25; letter-spacing: -.025em; }
+.formatted-answer p, .formatted-answer li { line-height: 1.72; }
+.formatted-answer ul, .formatted-answer ol { padding-left: 1.5em; }
+.formatted-answer li + li { margin-top: .38em; }
+.formatted-answer strong { color: #25332d; }
+.formatted-answer a { color: var(--green); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+.formatted-answer blockquote { margin-left: 0; padding: .2em 0 .2em 1em; border-left: 3px solid #9eb9ad; color: #64706a; }
+.formatted-answer code { border: 1px solid #dedbd2; border-radius: 4px; background: #efede6; padding: .12em .35em; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: .9em; }
+.formatted-answer pre { max-width: 100%; overflow-x: auto; border-radius: 8px; background: #1d2924; padding: 13px; color: #eef4f1; }
+.formatted-answer pre code { border: 0; background: transparent; padding: 0; color: inherit; }
+.formatted-answer table { width: 100%; border-collapse: collapse; display: block; overflow-x: auto; }
+.formatted-answer th, .formatted-answer td { border: 1px solid #d8d5cc; padding: .55em .7em; text-align: left; }
+.formatted-answer th { background: #efede6; color: #26332d; }
+.formatted-answer hr { border: 0; border-top: 1px solid #d8d5cc; margin: 1.4em 0; }
+.answer-copy { font-size: 11px; }
+.answer-copy h1 { font-size: 18px; margin: 0 0 10px; }
+.answer-copy h2 { font-size: 15px; margin: 18px 0 8px; }
+.answer-copy h3, .answer-copy h4 { font-size: 12px; margin: 15px 0 7px; }
+.answer-copy p, .answer-copy ul, .answer-copy ol, .answer-copy blockquote, .answer-copy pre, .answer-copy table { margin-top: 0; margin-bottom: 13px; }
 .skeleton { padding-top: 12px; }
 .skeleton i { display: block; height: 10px; border-radius: 5px; margin: 0 0 13px; background: linear-gradient(90deg, #e8e6df 25%, #f6f5f1 50%, #e8e6df 75%); background-size: 200% 100%; animation: shimmer 1.35s infinite; }
 .skeleton i:nth-child(2) { width: 91%; }
@@ -208,9 +228,11 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, a:focus-visib
 .evaluating { min-height: 125px; display: flex; align-items: center; justify-content: center; gap: 17px; }
 .evaluating strong { color: var(--green); font-size: 13px; }
 .evaluating p { margin: 3px 0 0; color: #79807c; font-size: 11px; }
-.final-copy { max-width: 820px; margin: auto; }
-.final-copy p { color: #39433e; font-size: 13px; line-height: 1.8; margin: 0 0 15px; }
-.final-copy p:first-child { font-family: Georgia, serif; font-size: 17px; line-height: 1.75; color: #26332d; }
+.final-copy { max-width: 820px; margin: auto; color: #39433e; font-size: 13px; }
+.final-copy h1 { font-size: 27px; margin: 0 0 16px; }
+.final-copy h2 { font-size: 21px; margin: 25px 0 11px; }
+.final-copy h3, .final-copy h4 { font-size: 16px; margin: 20px 0 9px; }
+.final-copy p, .final-copy ul, .final-copy ol, .final-copy blockquote, .final-copy pre, .final-copy table { margin-top: 0; margin-bottom: 15px; }
 .final-error { padding: 35px; text-align: center; color: #8c4d3c; }
 .final-error p { font-size: 11px; }
 .final-card footer { min-height: 46px; padding: 0 22px; border-top: 1px solid #e4e1d8; display: flex; justify-content: space-between; align-items: center; color: #828985; font-size: 9px; background: #f6f4ed; }
