@@ -95,7 +95,11 @@ export async function POST(request: Request) {
 
   const key = process.env[PROVIDER_ENV[provider]];
   if (!key) return json({ error: `${PROVIDER_NAMES[provider]} API key is missing.` }, 400);
-  const defaults: Record<Provider, string> = { openai: "gpt-5.2", claude: "claude-sonnet-5", gemini: "gemini-3.6-flash" };
+  const defaults: Record<Provider, string> = {
+    openai: "gpt-5-nano",
+    claude: "claude-haiku-4-5",
+    gemini: "gemini-2.5-flash-lite",
+  };
   const model = defaults[provider];
 
   let input = prompt;

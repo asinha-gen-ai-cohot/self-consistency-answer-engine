@@ -16,9 +16,9 @@ type Candidate = {
 };
 
 const PROVIDERS: Array<Omit<Candidate, "status"> & { color: string; mark: string }> = [
-  { provider: "openai", name: "OpenAI", model: "gpt-5.2", color: "mint", mark: "O" },
-  { provider: "claude", name: "Claude", model: "claude-sonnet-5", color: "coral", mark: "C" },
-  { provider: "gemini", name: "Gemini", model: "gemini-3.6-flash", color: "blue", mark: "G" },
+  { provider: "openai", name: "OpenAI", model: "gpt-5-nano", color: "mint", mark: "O" },
+  { provider: "claude", name: "Claude", model: "claude-haiku-4-5", color: "coral", mark: "C" },
+  { provider: "gemini", name: "Gemini", model: "gemini-2.5-flash-lite", color: "blue", mark: "G" },
 ];
 
 const STARTER_PROMPT =

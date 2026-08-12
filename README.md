@@ -11,6 +11,8 @@ Consensus is a self-consistency answer engine. It asks OpenAI, Claude, and Gemin
 - Server-side provider calls so keys are never exposed to browsers
 - Responsive, accessible UI and production Cloudflare Worker output
 
+The cost-conscious defaults are `gpt-5-nano`, `claude-haiku-4-5`, and `gemini-2.5-flash-lite`. Claude Haiku also performs the final synthesis.
+
 ## Run locally
 
 Requires Node.js 22.13 or newer.
