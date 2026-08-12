@@ -59,14 +59,20 @@ export default function Home() {
   );
   const running = candidates.some((candidate) => candidate.status === "thinking") || finalStatus === "thinking";
 
-  async function callEngine(body: unknown) {
+  async function requestEngine(body: unknown) {
     const response = await fetch("/api/consensus", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(body),
     });
-    const data = (await response.json()) as { answer?: string; error?: string };
-    if (!response.ok || !data.answer) throw new Error(data.error || "The model did not return an answer.");
+    const data = (await response.json()) as { answer?: string; runToken?: string; error?: string };
+    if (!response.ok) throw new Error(data.error || "The request could not be completed.");
+    return data;
+  }
+
+  async function callEngine(body: unknown) {
+    const data = await requestEngine(body);
+    if (!data.answer) throw new Error("The model did not return an answer.");
     return data.answer;
   }
 
@@ -85,6 +91,19 @@ export default function Home() {
     setFinalError("");
     setFinalStatus("idle");
     setCopied(false);
+
+    let runToken: string;
+    try {
+      const reservation = await requestEngine({ action: "start" });
+      if (!reservation.runToken) throw new Error("The council could not start this request.");
+      runToken = reservation.runToken;
+    } catch (error) {
+      setFinalStatus("error");
+      setFinalError(error instanceof Error ? error.message : "Please wait before asking another question.");
+      window.requestAnimationFrame(() => reveal(finalAnswerRef.current));
+      return;
+    }
+
     setCandidates(
       PROVIDERS.map(({ provider, name, model }) => ({
         provider,
@@ -103,6 +122,7 @@ export default function Home() {
             action: "generate",
             provider,
             prompt: cleanPrompt,
+            runToken,
           });
           const candidate: Candidate = {
             provider,
@@ -148,6 +168,7 @@ export default function Home() {
         action: "synthesize",
         provider: "claude",
         prompt: cleanPrompt,
+        runToken,
         candidates: successful.map(({ name, model, answer }) => ({ name, model, answer })),
       });
       if (runId.current === currentRun) {

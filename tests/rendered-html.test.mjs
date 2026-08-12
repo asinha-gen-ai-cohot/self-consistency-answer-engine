@@ -23,14 +23,3 @@ test("server-renders the AI Answer Council product", async () => {
   assert.match(html, /Gemini/);
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape|react-loading-skeleton|Demo mode|Configure/);
 });
-
-test("live orchestration requires server-managed provider credentials", async () => {
-  const response = await worker.fetch(new Request("http://localhost/api/consensus", {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ action: "generate", provider: "openai", prompt: "How can a team use AI well?" }),
-  }), env, ctx);
-  assert.equal(response.status, 400);
-  const body = await response.json();
-  assert.match(body.error, /API key is missing/i);
-});

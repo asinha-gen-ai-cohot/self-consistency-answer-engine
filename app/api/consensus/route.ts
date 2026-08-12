@@ -1,10 +1,13 @@
+import { env } from "cloudflare:workers";
+
 type Provider = "openai" | "claude" | "gemini";
 
 type Candidate = { name: string; model: string; answer: string };
 type RequestBody = {
-  action?: "generate" | "synthesize";
+  action?: "start" | "generate" | "synthesize";
   provider?: Provider;
   prompt?: string;
+  runToken?: string;
   candidates?: Candidate[];
 };
 
@@ -15,9 +18,77 @@ const PROVIDER_ENV: Record<Provider, string> = {
 };
 
 const PROVIDER_NAMES: Record<Provider, string> = { openai: "OpenAI", claude: "Claude", gemini: "Gemini" };
+const WINDOW_MS = 60_000;
 
-function json(data: unknown, status = 200) {
-  return Response.json(data, { status, headers: { "cache-control": "no-store" } });
+function json(data: unknown, status = 200, headers: Record<string, string> = {}) {
+  return Response.json(data, { status, headers: { "cache-control": "no-store", ...headers } });
+}
+
+function clientAddress(request: Request) {
+  return request.headers.get("cf-connecting-ip") || request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
+}
+
+async function hashClient(request: Request) {
+  const bytes = new TextEncoder().encode(`ai-answer-council:${clientAddress(request)}`);
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+async function reserveRun(request: Request) {
+  if (!env.DB) return json({ error: "Rate limiting is temporarily unavailable." }, 503);
+  const now = Date.now();
+  const cutoff = now - WINDOW_MS;
+  const runId = crypto.randomUUID();
+  const clientKey = await hashClient(request);
+  if (Math.random() < 0.01) {
+    const stale = now - 86_400_000;
+    await env.DB.batch([
+      env.DB.prepare("DELETE FROM rate_limit_calls WHERE created_at < ?").bind(stale),
+      env.DB.prepare("DELETE FROM rate_limit_windows WHERE window_started_at < ?").bind(stale),
+    ]);
+  }
+  const row = await env.DB.prepare(`
+    INSERT INTO rate_limit_windows (client_key, run_id, window_started_at)
+    VALUES (?, ?, ?)
+    ON CONFLICT(client_key) DO UPDATE SET
+      run_id = excluded.run_id,
+      window_started_at = excluded.window_started_at
+    WHERE rate_limit_windows.window_started_at <= ?
+    RETURNING run_id
+  `).bind(clientKey, runId, now, cutoff).first<{ run_id: string }>();
+
+  if (!row) {
+    const current = await env.DB.prepare(
+      "SELECT window_started_at FROM rate_limit_windows WHERE client_key = ?",
+    ).bind(clientKey).first<{ window_started_at: number }>();
+    const retryAfter = Math.max(1, Math.ceil(((current?.window_started_at || now) + WINDOW_MS - now) / 1000));
+    return json(
+      { error: `Please wait ${retryAfter} second${retryAfter === 1 ? "" : "s"} before asking the council again.` },
+      429,
+      { "retry-after": String(retryAfter) },
+    );
+  }
+
+  return json({ runToken: runId });
+}
+
+async function authorizeStep(request: Request, runToken: string | undefined, step: string) {
+  if (!env.DB || !runToken) return false;
+  const clientKey = await hashClient(request);
+  const cutoff = Date.now() - WINDOW_MS;
+  const run = await env.DB.prepare(`
+    SELECT run_id FROM rate_limit_windows
+    WHERE client_key = ? AND run_id = ? AND window_started_at > ?
+  `).bind(clientKey, runToken, cutoff).first();
+  if (!run) return false;
+
+  const claim = await env.DB.prepare(`
+    INSERT INTO rate_limit_calls (run_id, step, created_at)
+    VALUES (?, ?, ?)
+    ON CONFLICT(run_id, step) DO NOTHING
+    RETURNING id
+  `).bind(runToken, step, Date.now()).first();
+  return Boolean(claim);
 }
 
 async function requestJson(url: string, init: RequestInit) {
@@ -88,10 +159,17 @@ export async function POST(request: Request) {
     return json({ error: "Invalid request body." }, 400);
   }
 
+  if (body.action === "start") return reserveRun(request);
+
   const provider = body.provider;
   const prompt = body.prompt?.trim();
   if (!provider || !["openai", "claude", "gemini"].includes(provider)) return json({ error: "Choose a valid provider." }, 400);
   if (!prompt || prompt.length > 3000) return json({ error: "Enter a prompt between 1 and 3,000 characters." }, 400);
+
+  const step = body.action === "synthesize" ? "synthesize" : `generate:${provider}`;
+  if (!(await authorizeStep(request, body.runToken, step))) {
+    return json({ error: "This council request is invalid, expired, or has already been used." }, 429);
+  }
 
   const key = process.env[PROVIDER_ENV[provider]];
   if (!key) return json({ error: `${PROVIDER_NAMES[provider]} API key is missing.` }, 400);
