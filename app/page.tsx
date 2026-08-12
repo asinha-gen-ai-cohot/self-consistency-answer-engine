@@ -48,14 +48,6 @@ export default function Home() {
   const [finalAnswer, setFinalAnswer] = useState("");
   const [finalStatus, setFinalStatus] = useState<Status>("idle");
   const [finalError, setFinalError] = useState("");
-  const [demoMode, setDemoMode] = useState(true);
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const [keys, setKeys] = useState<Record<Provider, string>>({ openai: "", claude: "", gemini: "" });
-  const [models, setModels] = useState<Record<Provider, string>>({
-    openai: "gpt-5.2",
-    claude: "claude-sonnet-5",
-    gemini: "gemini-3.6-flash",
-  });
   const [copied, setCopied] = useState(false);
   const runId = useRef(0);
   const resultsRef = useRef<HTMLElement>(null);
@@ -94,31 +86,28 @@ export default function Home() {
     setFinalStatus("idle");
     setCopied(false);
     setCandidates(
-      PROVIDERS.map(({ provider, name }) => ({
+      PROVIDERS.map(({ provider, name, model }) => ({
         provider,
         name,
-        model: models[provider],
+        model,
         status: "thinking",
       })),
     );
     window.requestAnimationFrame(() => reveal(resultsRef.current));
 
     const responses = await Promise.all(
-      PROVIDERS.map(async ({ provider, name }) => {
+      PROVIDERS.map(async ({ provider, name, model }) => {
         const started = performance.now();
         try {
           const answer = await callEngine({
             action: "generate",
             provider,
             prompt: cleanPrompt,
-            apiKey: keys[provider],
-            model: models[provider],
-            demo: demoMode,
           });
           const candidate: Candidate = {
             provider,
             name,
-            model: models[provider],
+            model,
             status: "done",
             answer,
             elapsed: performance.now() - started,
@@ -131,7 +120,7 @@ export default function Home() {
           const candidate: Candidate = {
             provider,
             name,
-            model: models[provider],
+            model,
             status: "error",
             error: error instanceof Error ? error.message : "Request failed.",
             elapsed: performance.now() - started,
@@ -148,22 +137,18 @@ export default function Home() {
     const successful = responses.filter((item) => item.status === "done" && item.answer);
     if (!successful.length) {
       setFinalStatus("error");
-      setFinalError("None of the models completed. Check your API keys or switch on demo mode.");
+      setFinalError("None of the models completed. The server provider credentials may not be configured.");
       window.requestAnimationFrame(() => reveal(finalAnswerRef.current));
       return;
     }
 
     setFinalStatus("thinking");
-    const evaluator: Provider = demoMode || keys.claude ? "claude" : keys.openai ? "openai" : "gemini";
     try {
       const answer = await callEngine({
         action: "synthesize",
-        provider: evaluator,
+        provider: "claude",
         prompt: cleanPrompt,
         candidates: successful.map(({ name, model, answer }) => ({ name, model, answer })),
-        apiKey: keys[evaluator],
-        model: models[evaluator],
-        demo: demoMode,
       });
       if (runId.current === currentRun) {
         setFinalAnswer(answer);
@@ -191,14 +176,6 @@ export default function Home() {
           <span className="brand-mark" aria-hidden="true"><i /><i /><i /></span>
           <span>consensus</span>
         </a>
-        <div className="top-actions">
-          <span className={`mode-pill ${demoMode ? "demo" : "live"}`}>
-            <span /> {demoMode ? "Demo mode" : "Live APIs"}
-          </span>
-          <button className="settings-button" onClick={() => setSettingsOpen((open) => !open)} aria-expanded={settingsOpen}>
-            <span aria-hidden="true">⚙</span> Configure
-          </button>
-        </div>
       </header>
 
       <section className="hero" id="top">
@@ -207,46 +184,6 @@ export default function Home() {
         <p className="hero-copy">
           Ask once. Consensus consults leading AI models in parallel, then uses an independent evaluator to combine their strongest ideas.
         </p>
-
-        {settingsOpen && (
-          <section className="settings-panel" aria-label="API configuration">
-            <div className="settings-heading">
-              <div>
-                <h2>Model configuration</h2>
-                <p>Keys are sent only with your request and are never stored by this site.</p>
-              </div>
-              <label className="switch-row">
-                <input type="checkbox" checked={demoMode} onChange={(event) => setDemoMode(event.target.checked)} />
-                <span className="switch" />
-                Demo mode
-              </label>
-            </div>
-            <div className="settings-grid">
-              {PROVIDERS.map((provider) => (
-                <div className="setting" key={provider.provider}>
-                  <label htmlFor={`${provider.provider}-key`}>{provider.name} API key</label>
-                  <input
-                    id={`${provider.provider}-key`}
-                    type="password"
-                    value={keys[provider.provider]}
-                    placeholder={provider.provider === "openai" ? "sk-…" : "Paste key"}
-                    autoComplete="off"
-                    onChange={(event) => setKeys((current) => ({ ...current, [provider.provider]: event.target.value }))}
-                  />
-                  <label className="model-label" htmlFor={`${provider.provider}-model`}>Model</label>
-                  <input
-                    id={`${provider.provider}-model`}
-                    value={models[provider.provider]}
-                    onChange={(event) => setModels((current) => ({ ...current, [provider.provider]: event.target.value }))}
-                  />
-                </div>
-              ))}
-            </div>
-            {!demoMode && !Object.values(keys).some(Boolean) && (
-              <p className="settings-note">Add at least one key to run live. For full consensus, add all three.</p>
-            )}
-          </section>
-        )}
 
         <div className="prompt-shell">
           <label htmlFor="question">What would you like to understand?</label>

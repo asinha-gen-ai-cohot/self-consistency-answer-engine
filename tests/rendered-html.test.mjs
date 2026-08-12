@@ -21,38 +21,16 @@ test("server-renders the Consensus product", async () => {
   assert.match(html, /OpenAI/);
   assert.match(html, /Claude/);
   assert.match(html, /Gemini/);
-  assert.doesNotMatch(html, /codex-preview|Your site is taking shape|react-loading-skeleton/);
+  assert.doesNotMatch(html, /codex-preview|Your site is taking shape|react-loading-skeleton|Demo mode|Configure/);
 });
 
-test("demo orchestration returns a model answer", async () => {
+test("live orchestration requires server-managed provider credentials", async () => {
   const response = await worker.fetch(new Request("http://localhost/api/consensus", {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ action: "generate", provider: "openai", prompt: "How can a team use AI well?", demo: true }),
+    body: JSON.stringify({ action: "generate", provider: "openai", prompt: "How can a team use AI well?" }),
   }), env, ctx);
-  assert.equal(response.status, 200);
+  assert.equal(response.status, 400);
   const body = await response.json();
-  assert.match(body.answer, /start with the outcome/i);
-});
-
-test("demo evaluator synthesizes candidate responses", async () => {
-  const response = await worker.fetch(new Request("http://localhost/api/consensus", {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({
-      action: "synthesize",
-      provider: "claude",
-      prompt: "How can a team use AI well?",
-      demo: true,
-      candidates: [
-        { name: "OpenAI", model: "test", answer: "Start small." },
-        { name: "Claude", model: "test", answer: "Keep human review." },
-        { name: "Gemini", model: "test", answer: "Measure results." },
-      ],
-    }),
-  }), env, ctx);
-  assert.equal(response.status, 200);
-  const body = await response.json();
-  assert.match(body.answer, /people in charge of judgment/i);
-  assert.match(body.answer, /all 3 perspectives/i);
+  assert.match(body.error, /API key is missing/i);
 });

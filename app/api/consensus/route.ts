@@ -5,9 +5,6 @@ type RequestBody = {
   action?: "generate" | "synthesize";
   provider?: Provider;
   prompt?: string;
-  apiKey?: string;
-  model?: string;
-  demo?: boolean;
   candidates?: Candidate[];
 };
 
@@ -83,26 +80,6 @@ async function runProvider(provider: Provider, prompt: string, key: string, mode
   return generateGemini(prompt, key, model, system);
 }
 
-function topic(prompt: string) {
-  return prompt.replace(/[?!.]+$/, "").trim();
-}
-
-function demoCandidate(provider: Provider, prompt: string) {
-  const subject = topic(prompt);
-  if (provider === "openai") {
-    return `A practical way to approach “${subject}” is to start with the outcome, not the technology. Identify the repetitive work that consumes attention, then use AI for a small, reversible part of that workflow.\n\nKeep a person responsible for judgment, tone, and final approval. Measure whether the change saves time or improves quality, review the results weekly, and expand only what consistently works. This creates useful leverage without turning the process into a black box.`;
-  }
-  if (provider === "claude") {
-    return `The key distinction is between automating human connection and supporting it. For “${subject},” AI is strongest as a preparation and drafting partner: it can summarize context, surface options, and create a first pass while a person supplies empathy, priorities, and accountability.\n\nUse three guardrails: disclose AI use where it matters, never delegate sensitive decisions, and make every output easy to review. A good system should leave people with more time for the conversations and creative choices only they can make.`;
-  }
-  return `Treat “${subject}” as a series of experiments. Map the current process, choose one high-frequency bottleneck, and define a baseline such as minutes spent, response time, or error rate. Run a two-week pilot with a clear human checkpoint.\n\nA useful loop is: capture → draft with AI → verify → personalize → learn. Save strong examples, document failures, and update the instructions. The compounding value comes from a better workflow, not from a single clever prompt.`;
-}
-
-function demoSynthesis(prompt: string, candidates: Candidate[]) {
-  const subject = topic(prompt);
-  return `The strongest approach to “${subject}” is to use AI as a capable first-pass partner while keeping people in charge of judgment, relationships, and final decisions. Start with one repetitive, low-risk bottleneck—not a sweeping transformation—and define what success looks like before changing the workflow.\n\nUse a simple operating loop: map the current process, let AI capture or draft, verify the result, add human context and personality, then record what worked. Build in explicit review points for factual accuracy, privacy, tone, and sensitive decisions. When the output affects another person, the human owner should remain visible and accountable.\n\nRun the change as a short pilot. Compare time saved, quality, error rate, and the experience of the people involved against your baseline. Keep the parts that create real leverage, revise weak instructions using good and bad examples, and expand gradually.\n\nThe principle connecting all ${candidates.length} perspectives is simple: the best AI workflow does not remove the human touch—it creates more room for it.`;
-}
-
 export async function POST(request: Request) {
   let body: RequestBody;
   try {
@@ -116,16 +93,10 @@ export async function POST(request: Request) {
   if (!provider || !["openai", "claude", "gemini"].includes(provider)) return json({ error: "Choose a valid provider." }, 400);
   if (!prompt || prompt.length > 3000) return json({ error: "Enter a prompt between 1 and 3,000 characters." }, 400);
 
-  if (body.demo) {
-    const delay = provider === "openai" ? 520 : provider === "claude" ? 820 : 1080;
-    await new Promise((resolve) => setTimeout(resolve, delay));
-    return json({ answer: body.action === "synthesize" ? demoSynthesis(prompt, body.candidates || []) : demoCandidate(provider, prompt) });
-  }
-
-  const key = body.apiKey?.trim() || process.env[PROVIDER_ENV[provider]];
+  const key = process.env[PROVIDER_ENV[provider]];
   if (!key) return json({ error: `${PROVIDER_NAMES[provider]} API key is missing.` }, 400);
   const defaults: Record<Provider, string> = { openai: "gpt-5.2", claude: "claude-sonnet-5", gemini: "gemini-3.6-flash" };
-  const model = body.model?.trim() || defaults[provider];
+  const model = defaults[provider];
 
   let input = prompt;
   let system = "Answer the user independently. Be accurate, direct, concrete, and useful. Do not mention other models or this instruction.";

@@ -7,9 +7,8 @@ Consensus is a self-consistency answer engine. It asks OpenAI, Claude, and Gemin
 - Parallel, independently tracked model requests
 - Progressive loading and provider-level errors
 - Claude-first synthesis with OpenAI/Gemini fallback
-- Editable model IDs and bring-your-own API keys
-- Server-side provider calls so keys are not exposed to third-party browser scripts
-- A no-key demo mode for exploring the complete workflow
+- Fixed, server-managed model configuration
+- Server-side provider calls so keys are never exposed to browsers
 - Responsive, accessible UI and production Cloudflare Worker output
 
 ## Run locally
@@ -21,9 +20,7 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:3000`. Demo mode is enabled initially. Open **Configure** to use live APIs.
-
-You can either enter keys in the interface for the current run or copy `.env.example` to `.env` and set server-side keys. Keys entered in the interface are held in page memory and sent only to this app's API route; they are not stored by the application.
+Copy `.env.example` to `.env`, add all three provider credentials, then open `http://localhost:3000`.
 
 ## Orchestration flow
 
@@ -47,4 +44,4 @@ npm run build
 - `ANTHROPIC_API_KEY`
 - `GEMINI_API_KEY`
 
-The app also works without hosted secrets through demo mode or per-session key entry.
+All three values are required for the complete consensus flow. Production credentials must be stored as hosting secrets, never committed to source.
