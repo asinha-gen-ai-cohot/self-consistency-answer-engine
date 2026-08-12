@@ -195,7 +195,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, a:focus-visib
 .formatted-answer th, .formatted-answer td { border: 1px solid #d8d5cc; padding: .55em .7em; text-align: left; }
 .formatted-answer th { background: #efede6; color: #26332d; }
 .formatted-answer hr { border: 0; border-top: 1px solid #d8d5cc; margin: 1.4em 0; }
-.answer-copy { font-size: 11px; }
+.answer-copy { font-size: 14px; }
 .answer-copy h1 { font-size: 18px; margin: 0 0 10px; }
 .answer-copy h2 { font-size: 15px; margin: 18px 0 8px; }
 .answer-copy h3, .answer-copy h4 { font-size: 12px; margin: 15px 0 7px; }
@@ -228,7 +228,7 @@ button:focus-visible, textarea:focus-visible, input:focus-visible, a:focus-visib
 .evaluating { min-height: 125px; display: flex; align-items: center; justify-content: center; gap: 17px; }
 .evaluating strong { color: var(--green); font-size: 13px; }
 .evaluating p { margin: 3px 0 0; color: #79807c; font-size: 11px; }
-.final-copy { max-width: 820px; margin: auto; color: #39433e; font-size: 13px; }
+.final-copy { max-width: 820px; margin: auto; color: #39433e; font-size: 14px; }
 .final-copy h1 { font-size: 27px; margin: 0 0 16px; }
 .final-copy h2 { font-size: 21px; margin: 25px 0 11px; }
 .final-copy h3, .final-copy h4 { font-size: 16px; margin: 20px 0 9px; }
