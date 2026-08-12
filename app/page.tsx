@@ -172,9 +172,9 @@ export default function Home() {
   return (
     <main>
       <header className="topbar">
-        <a className="brand" href="#top" aria-label="Consensus home">
+        <a className="brand" href="#top" aria-label="AI Answer Council home">
           <span className="brand-mark" aria-hidden="true"><i /><i /><i /></span>
-          <span>consensus</span>
+          <span>AI Answer Council</span>
         </a>
       </header>
 
@@ -182,7 +182,7 @@ export default function Home() {
         <div className="eyebrow"><span>✦</span> MULTI-MODEL INTELLIGENCE</div>
         <h1>Three perspectives.<br /><em>One better answer.</em></h1>
         <p className="hero-copy">
-          Ask once. Consensus consults leading AI models in parallel, then uses an independent evaluator to combine their strongest ideas.
+          Ask once. AI Answer Council consults leading models in parallel, then uses an independent evaluator to combine their strongest ideas.
         </p>
 
         <div className="prompt-shell">
@@ -201,7 +201,7 @@ export default function Home() {
           <div className="prompt-footer">
             <span>{prompt.length.toLocaleString()} / 3,000</span>
             <button className="run-button" onClick={runConsensus} disabled={!prompt.trim() || running}>
-              {running ? <><span className="spinner" /> Thinking together…</> : <>Get consensus <span>→</span></>}
+              {running ? <><span className="spinner" /> Council deliberating…</> : <>Ask the council <span>→</span></>}
             </button>
           </div>
         </div>
@@ -257,7 +257,7 @@ export default function Home() {
           <div className="final-head">
             <div className="final-icon">✦</div>
             <div>
-              <span>CONSENSUS ANSWER</span>
+              <span>COUNCIL ANSWER</span>
               <h2>The strongest answer, synthesized.</h2>
             </div>
             {finalStatus === "done" && <button onClick={copyAnswer}>{copied ? "Copied!" : "Copy answer"}</button>}
@@ -281,7 +281,7 @@ export default function Home() {
       </section>
 
       <footer className="site-footer">
-        <div className="footer-brand"><span className="brand-mark small"><i /><i /><i /></span> consensus</div>
+        <div className="footer-brand"><span className="brand-mark small"><i /><i /><i /></span> AI Answer Council</div>
         <p>Better answers emerge when ideas meet.</p>
         <span>Built with thoughtful AI orchestration</span>
       </footer>

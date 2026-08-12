@@ -1,6 +1,6 @@
-# Consensus
+# AI Answer Council
 
-Consensus is a self-consistency answer engine. It asks OpenAI, Claude, and Gemini the same question in parallel, displays each independent response, and then asks an evaluator model (Claude by default) to write a new answer from the strongest ideas.
+AI Answer Council is a self-consistency answer engine. It asks OpenAI, Claude, and Gemini the same question in parallel, displays each independent response, and then asks an evaluator model (Claude by default) to write a new answer from the strongest ideas.
 
 ## What it includes
 

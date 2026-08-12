@@ -10,14 +10,14 @@ const env = {
 };
 const ctx = { waitUntil() {}, passThroughOnException() {} };
 
-test("server-renders the Consensus product", async () => {
+test("server-renders the AI Answer Council product", async () => {
   const response = await worker.fetch(new Request("http://localhost/", { headers: { accept: "text/html" } }), env, ctx);
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
   const html = await response.text();
-  assert.match(html, /Consensus — Three perspectives\. One better answer\./);
+  assert.match(html, /AI Answer Council — Three perspectives\. One better answer\./);
   assert.match(html, /Three perspectives/);
-  assert.match(html, /Get consensus/);
+  assert.match(html, /Ask the council/);
   assert.match(html, /OpenAI/);
   assert.match(html, /Claude/);
   assert.match(html, /Gemini/);
